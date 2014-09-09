@@ -44,6 +44,7 @@
 #include <open_ptrack/tracking/track.h>
 #include <open_ptrack/tracking/munkres.h>
 #include <opt_msgs/TrackArray.h>
+#include <opt_msgs/TrackWithIndicesAndTrajectoryIDArray.h>
 #include <visualization_msgs/MarkerArray.h>
 
 namespace open_ptrack
@@ -201,6 +202,14 @@ namespace open_ptrack
          */
         void
         toMsg(opt_msgs::TrackArray::Ptr& msg);
+
+        /**
+         * \brief Writes the state of each track into a TrackWithIndicesArray message.
+         *
+         * \param[in] msg The TrackWithIndicesArray message to fill.
+         */
+        void
+        toMsg(opt_msgs::TrackWithIndicesAndTrajectoryIDArray::Ptr& msg);
 
         /**
          * \brief Writes the state of tracks with a given frame id into a TrackArray message.

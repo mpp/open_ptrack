@@ -441,7 +441,7 @@ open_ptrack::detection::GroundplaneEstimation<PointT>::compute ()
     }
 
     // Order planar regions according to height (y coordinate):
-    std::sort(regions.begin(), regions.end(), GroundplaneEstimation::planeHeightComparator);
+    std::sort(regions.begin(), regions.end(), GroundplaneEstimation::planeSizeComparator);
 
     // Color selected planar region in red:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -536,6 +536,12 @@ template <typename PointT> bool
 open_ptrack::detection::GroundplaneEstimation<PointT>::planeHeightComparator (pcl::PlanarRegion<PointT> region1, pcl::PlanarRegion<PointT> region2)
 {
   return region1.getCentroid()[1] > region2.getCentroid()[1];
+}
+
+template <typename PointT> bool
+open_ptrack::detection::GroundplaneEstimation<PointT>::planeSizeComparator (pcl::PlanarRegion<PointT> region1, pcl::PlanarRegion<PointT> region2)
+{
+  return region1.getCount() > region2.getCount();
 }
 
 template <typename PointT> pcl::PointCloud<pcl::PointXYZRGB>::Ptr

@@ -29,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -85,8 +85,7 @@ Visualization Manager:
       Marker Topic: /tracker/markers
       Name: Marker
       Namespaces:
-        numbers: true
-        people: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -94,8 +93,7 @@ Visualization Manager:
       Marker Topic: /tracker/markers_array
       Name: MarkerArray
       Namespaces:
-        numbers: true
-        people: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/TF
@@ -103,17 +101,133 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        camera_depth_frame:
-          Value: false
-        camera_depth_optical_frame:
-          Value: false
-        camera_link:
-          Value: false
-        camera_rgb_frame:
-          Value: false
-        camera_rgb_optical_frame:
+        base_link:
+          Value: true
+        ee_link:
+          Value: true
+        forearm_link:
+          Value: true
+        h1:
+          Value: true
+        h10:
+          Value: true
+        h11:
+          Value: true
+        h12:
+          Value: true
+        h13:
+          Value: true
+        h14:
+          Value: true
+        h15:
+          Value: true
+        h16:
+          Value: true
+        h17:
+          Value: true
+        h18:
+          Value: true
+        h19:
+          Value: true
+        h2:
+          Value: true
+        h20:
+          Value: true
+        h21:
+          Value: true
+        h22:
+          Value: true
+        h23:
+          Value: true
+        h24:
+          Value: true
+        h25:
+          Value: true
+        h26:
+          Value: true
+        h27:
+          Value: true
+        h28:
+          Value: true
+        h29:
+          Value: true
+        h3:
+          Value: true
+        h30:
+          Value: true
+        h31:
+          Value: true
+        h32:
+          Value: true
+        h33:
+          Value: true
+        h34:
+          Value: true
+        h4:
+          Value: true
+        h5:
+          Value: true
+        h6:
+          Value: true
+        h7:
+          Value: true
+        h8:
+          Value: true
+        h9:
+          Value: true
+        h_ref:
+          Value: true
+        hole_guess:
+          Value: true
+        human_arm_l_link:
+          Value: true
+        human_arm_l_tip:
+          Value: true
+        human_arm_r_link:
+          Value: true
+        human_arm_r_pointer:
+          Value: true
+        human_arm_r_tip:
+          Value: true
+        human_base_link:
+          Value: true
+        kinect1_cloud_link:
+          Value: true
+        kinect1_link:
+          Value: true
+        kinect2_cloud_link:
+          Value: true
+        kinect2_link:
+          Value: true
+        pointed_to:
+          Value: true
+        rivet_home:
+          Value: true
+        shoulder_link:
+          Value: true
+        stereo_camera_link:
+          Value: true
+        table_link:
+          Value: true
+        tcp:
+          Value: true
+        tool_link:
+          Value: true
+        upper_arm_link:
+          Value: true
+        ur_base:
+          Value: true
+        ur_flange:
+          Value: true
+        workpiece_link:
           Value: true
         world:
+          Value: true
+        wrist_1_link:
+          Value: true
+        wrist_2_link:
+          Value: true
+        wrist_3_link:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -121,14 +235,113 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        camera_link:
-          camera_depth_frame:
-            camera_depth_optical_frame:
-              {}
-          camera_rgb_frame:
-            camera_rgb_optical_frame:
-              world:
+        world:
+          human_base_link:
+            human_arm_l_link:
+              human_arm_l_tip:
                 {}
+            human_arm_r_link:
+              human_arm_r_tip:
+                human_arm_r_pointer:
+                  pointed_to:
+                    {}
+          kinect1_link:
+            kinect1_cloud_link:
+              {}
+          kinect2_link:
+            kinect2_cloud_link:
+              {}
+          table_link:
+            ur_base:
+              base_link:
+                shoulder_link:
+                  upper_arm_link:
+                    forearm_link:
+                      wrist_1_link:
+                        wrist_2_link:
+                          wrist_3_link:
+                            ee_link:
+                              ur_flange:
+                                stereo_camera_link:
+                                  {}
+                                tool_link:
+                                  tcp:
+                                    {}
+              hole_guess:
+                {}
+              rivet_home:
+                {}
+          workpiece_link:
+            h1:
+              {}
+            h10:
+              {}
+            h11:
+              {}
+            h12:
+              {}
+            h13:
+              {}
+            h14:
+              {}
+            h15:
+              {}
+            h16:
+              {}
+            h17:
+              {}
+            h18:
+              {}
+            h19:
+              {}
+            h2:
+              {}
+            h20:
+              {}
+            h21:
+              {}
+            h22:
+              {}
+            h23:
+              {}
+            h24:
+              {}
+            h25:
+              {}
+            h26:
+              {}
+            h27:
+              {}
+            h28:
+              {}
+            h29:
+              {}
+            h3:
+              {}
+            h30:
+              {}
+            h31:
+              {}
+            h32:
+              {}
+            h33:
+              {}
+            h34:
+              {}
+            h4:
+              {}
+            h5:
+              {}
+            h6:
+              {}
+            h7:
+              {}
+            h8:
+              {}
+            h9:
+              {}
+            h_ref:
+              {}
       Update Interval: 0
       Value: true
   Enabled: true
@@ -155,17 +368,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 6.80721
+      Distance: 12.4963
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.06
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
       Focal Point:
-        X: 2.77616
-        Y: -0.0212287
-        Z: 1.23964
+        X: 1.7635
+        Y: 0.700178
+        Z: 0.895527
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.5598
+      Pitch: 0.309801
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.1454
+      Yaw: 4.2104
     Saved: ~
 Window Geometry:
   Displays:
@@ -183,5 +401,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 960
-  X: -7
+  X: 58
   Y: 24

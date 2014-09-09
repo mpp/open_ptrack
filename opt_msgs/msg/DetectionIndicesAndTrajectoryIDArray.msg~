@@ -1,0 +1,7 @@
+Header header
+
+opt_msgs/DetectionIndicesAndTrajectoryID[] detections
+
+float64[] intrinsic_matrix
+
+std_msgs/Int32 trajectory_id

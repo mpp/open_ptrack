@@ -65,9 +65,14 @@
 #include <opt_msgs/RoiRect.h>
 #include <opt_msgs/Rois.h>
 #include <std_msgs/String.h>
+#include <std_msgs/Int32.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <opt_msgs/Detection.h>
 #include <opt_msgs/DetectionArray.h>
+#include <opt_msgs/DetectionAndIndices.h>
+#include <opt_msgs/DetectionAndIndicesArray.h>
+#include <opt_msgs/DetectionIndicesAndTrajectoryID.h>
+#include <opt_msgs/DetectionIndicesAndTrajectoryIDArray.h>
 
 using namespace opt_msgs;
 using namespace sensor_msgs;
@@ -80,10 +85,20 @@ PointCloudT::Ptr cloud(new PointCloudT);
 bool intrinsics_already_set = false;
 Eigen::Matrix3f intrinsics_matrix;
 
+int trajectory_id = -1;
+
+void trajectory_id_cb(const std_msgs::Int32ConstPtr& idx_msg)
+{
+    /// TODO: check if a mutex block is necessary
+    trajectory_id = idx_msg->data;
+}
+
 void
 cloud_cb (const PointCloudT::ConstPtr& callback_cloud)
 {
   *cloud = *callback_cloud;
+  cloud->width = 640;
+  cloud->height = 480;
   new_cloud_available_flag = true;
 }
 
@@ -111,6 +126,8 @@ main (int argc, char** argv)
   std::string svm_filename;
 
   nh.param("classifier_file", svm_filename, std::string("./"));
+
+
   bool use_rgb;
   nh.param("use_rgb", use_rgb, false);
   int minimum_luminance;
@@ -143,8 +160,14 @@ main (int argc, char** argv)
   double valid_points_threshold;
   nh.param("valid_points_threshold", valid_points_threshold, 0.2);
 
+  // EUROC parameters
+  std::string detection_and_indices_topic;
+  nh.param("detection_and_indices_topic", detection_and_indices_topic, std::string("/ground_based_people_detector/detection_and_indices"));
+  std::string noground_cloud_topic;
+  nh.param("noground_cloud_topic", noground_cloud_topic, std::string("/ground_based_people_detector/noground_cloud"));
+
   // Fixed parameters:
-  float voxel_size = 0.06;
+  float voxel_size = 0.03;
   //	Eigen::Matrix3f intrinsics_matrix;
   intrinsics_matrix << 525, 0.0, 319.5, 0.0, 525, 239.5, 0.0, 0.0, 1.0; // Kinect RGB camera intrinsics
 
@@ -157,9 +180,16 @@ main (int argc, char** argv)
   ros::Subscriber sub = nh.subscribe(pointcloud_topic, 1, cloud_cb);
   ros::Subscriber camera_info_sub = nh.subscribe(camera_info_topic, 1, cameraInfoCallback);
 
+  // EUROC Subscribers:
+  ros::Subscriber trajectory_id_sub = nh.subscribe("/t1_1_trajectory_index", 1, trajectory_id_cb);
+
   // Publishers:
   ros::Publisher detection_pub;
   detection_pub= nh.advertise<DetectionArray>(output_topic, 3);
+
+  // EUROC publishers:
+  ros::Publisher noground_cloud = nh.advertise< sensor_msgs::PointCloud2/*pcl::PointCloud<pcl::PointXYZRGB>*/ >(noground_cloud_topic, 1);
+  ros::Publisher detection_and_indices_pub = nh.advertise< opt_msgs::DetectionIndicesAndTrajectoryIDArray >(detection_and_indices_topic, 1);
 
   Rois output_rois_;
   open_ptrack::opt_utils::Conversions converter;
@@ -240,6 +270,7 @@ main (int argc, char** argv)
   people_detector.setSamplingFactor(sampling_factor);              // set sampling factor
   people_detector.setUseRGB(use_rgb);                              // set if RGB should be used or not
   people_detector.setSensorTiltCompensation(sensor_tilt_compensation);						 // enable point cloud rotation correction
+  people_detector.setMinimumDistanceBetweenHeads(2.0);
 
   // Main loop:
   while(ros::ok())
@@ -257,6 +288,10 @@ main (int argc, char** argv)
       people_detector.setGround(ground_coeffs);                    // set floor coefficients
       people_detector.compute(clusters);                           // perform people detection
 
+      // EUROC get no ground cloud
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr no_ground(new pcl::PointCloud<pcl::PointXYZRGB>);
+      no_ground = people_detector.getNoGroundCloud();
+
       // If not lock_ground, update ground coefficients:
       if (not lock_ground)
         ground_coeffs = people_detector.getGround();                 // get updated floor coefficients
@@ -266,11 +301,16 @@ main (int argc, char** argv)
 
       /// Write detection message:
       DetectionArray::Ptr detection_array_msg(new DetectionArray);
+      DetectionIndicesAndTrajectoryIDArray::Ptr detection_and_indices_array_msg(new DetectionIndicesAndTrajectoryIDArray);
       // Set camera-specific fields:
       detection_array_msg->header = cloud_header;
+      detection_and_indices_array_msg->header = cloud_header;
       for(int i = 0; i < 3; i++)
         for(int j = 0; j < 3; j++)
-          detection_array_msg->intrinsic_matrix.push_back(intrinsics_matrix(i, j));
+        {
+            detection_array_msg->intrinsic_matrix.push_back(intrinsics_matrix(i, j));
+            detection_and_indices_array_msg->intrinsic_matrix.push_back(intrinsics_matrix(i, j));
+        }
 
       // Add all valid detections:
       for(std::vector<pcl::people::PersonCluster<PointT> >::iterator it = clusters.begin(); it != clusters.end(); ++it)
@@ -280,6 +320,7 @@ main (int argc, char** argv)
         {
           // Create detection message:
           Detection detection_msg;
+          DetectionAndIndices detectionAndIndices_msg;
           converter.Vector3fToVector3(anti_transform * it->getMin(), detection_msg.box_3D.p1);
           converter.Vector3fToVector3(anti_transform * it->getMax(), detection_msg.box_3D.p2);
 
@@ -306,15 +347,31 @@ main (int argc, char** argv)
           detection_msg.height = it->getHeight();
           detection_msg.confidence = it->getPersonConfidence();
           detection_msg.distance = it->getDistance();
+
           converter.Vector3fToVector3((1+head_centroid_compensation/centroid3d.norm())*centroid3d, detection_msg.centroid);
           converter.Vector3fToVector3((1+head_centroid_compensation/top3d.norm())*top3d, detection_msg.top);
           converter.Vector3fToVector3((1+head_centroid_compensation/bottom3d.norm())*bottom3d, detection_msg.bottom);
 
+          detectionAndIndices_msg.detection = detection_msg;
+
+          detectionAndIndices_msg.indices.header = cloud_header;
+          //pcl::PointIndices indices = it->getIndices();
+          //indices.indices
+          detectionAndIndices_msg.indices.indices = (it->getIndices()).indices;
+
           // Add message:
           detection_array_msg->detections.push_back(detection_msg);
+          detection_and_indices_array_msg->detections.push_back(detectionAndIndices_msg);
         }
       }
+      detection_and_indices_array_msg->trajectory_id.data = trajectory_id;
       detection_pub.publish(detection_array_msg);		 // publish message
+
+      // EUROC publish messages
+      detection_and_indices_pub.publish(detection_and_indices_array_msg);
+      sensor_msgs::PointCloud2 no_ground_ros_msg;
+      pcl::toROSMsg(*no_ground, no_ground_ros_msg);
+      noground_cloud.publish(no_ground_ros_msg);
     }
 
     // Execute callbacks:

@@ -41,6 +41,7 @@
 #define OPEN_PTRACK_DETECTION_GROUND_BASED_PEOPLE_DETECTION_APP_HPP_
 
 #include <open_ptrack/detection/ground_based_people_detection_app.h>
+#include <pcl/visualization/image_viewer.h>
 
 template <typename PointT>
 open_ptrack::detection::GroundBasedPeopleDetectionApp<PointT>::GroundBasedPeopleDetectionApp ()

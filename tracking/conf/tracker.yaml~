@@ -1,7 +1,7 @@
 min_confidence_initialization: -0.5
 rate: 30
 world_frame_id: "/world"
-voxel_size: 0.03 #non centra con la cloud della detection (lì è hardcoded)
+voxel_size: 0.03 #non centra con la cloud della detection
 extrinsic_calibration: false
 
 orientation:

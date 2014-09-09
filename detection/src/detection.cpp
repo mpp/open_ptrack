@@ -65,6 +65,30 @@ namespace open_ptrack
       world_bottom_ = source->transform(v);
     }
 
+    Detection::Detection(opt_msgs::DetectionAndIndices detection, open_ptrack::detection::DetectionSource* source) :
+        detection_msg_(detection.detection), source_(source)
+    {
+      // Transform centroid, top and bottom points from camera frame to world frame:
+      Eigen::Vector3d v;
+      v(0) = detection.detection.centroid.x;
+      v(1) = detection.detection.centroid.y;
+      v(2) = detection.detection.centroid.z;
+      world_centroid_ = source->transform(v);
+
+      v(0) = detection.detection.top.x;
+      v(1) = detection.detection.top.y;
+      v(2) = detection.detection.top.z;
+      world_top_ = source->transform(v);
+
+      v(0) = detection.detection.bottom.x;
+      v(1) = detection.detection.bottom.y;
+      v(2) = detection.detection.bottom.z;
+      world_bottom_ = source->transform(v);
+
+      //point_indices_.header = detection.indices.header;
+      point_indices_.indices = detection.indices.indices;
+    }
+
     Detection::~Detection()
     {
 
@@ -128,6 +152,12 @@ namespace open_ptrack
     Detection::getImage()
     {
       return source_->getImage();
+    }
+
+    pcl::PointIndices&
+    Detection::getPointIndices()
+    {
+        return point_indices_;
     }
 
     void

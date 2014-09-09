@@ -183,6 +183,17 @@ namespace open_ptrack
         planeHeightComparator (pcl::PlanarRegion<PointT> region1, pcl::PlanarRegion<PointT> region2);
 
         /**
+         * \brief States which planar region has more points.
+         *
+         * \param[in] region1 First planar region.
+         * \param[in] region2 Second planar region.
+         *
+         * \return true if region2 has less point than region1.
+         */
+        static bool
+        planeSizeComparator (pcl::PlanarRegion<PointT> region1, pcl::PlanarRegion<PointT> region2);
+
+        /**
          * \brief Color the planar regions with different colors or the index-th planar region in red.
          *
          * \param[in] regions Vector of planar regions.

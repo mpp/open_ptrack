@@ -1,0 +1,5 @@
+opt_msgs/Detection detection
+
+pcl_msgs/PointIndices indices
+
+std_msgs/Int32 trajectory_id

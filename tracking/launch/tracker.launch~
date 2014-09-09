@@ -2,7 +2,6 @@
   
   <!--<arg name="input_topic" value="/detector/detections" />-->
   <arg name="input_topic" value="/ground_based_people_detector/detection_and_indices" />
-
   <!-- Launch the tracking node -->
   <node pkg="tracking" type="tracker" name="tracker_node" output="screen">
     <remap from="~input" to="$(arg input_topic)" />

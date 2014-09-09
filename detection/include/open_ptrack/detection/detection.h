@@ -44,7 +44,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <opt_msgs/Detection.h>
+#include <opt_msgs/DetectionAndIndices.h>
 #include <open_ptrack/detection/detection_source.h>
+#include <pcl/PointIndices.h>
 
 namespace open_ptrack
 {
@@ -70,6 +72,9 @@ namespace open_ptrack
         /** \brief Detection top point in world reference frame */
         Eigen::Vector3d world_top_;
 
+        /** \brief Indices of points in the detection-cluster of the input point cloud */
+        pcl::PointIndices point_indices_;
+
         /**
          * \brief Converts a BoundingBox2D message into a cv::Rect.
          *
@@ -93,6 +98,9 @@ namespace open_ptrack
 
         /** \brief Constructor. */
         Detection(opt_msgs::Detection detection, open_ptrack::detection::DetectionSource* source);
+
+        /** \brief Constructor. */
+        Detection(opt_msgs::DetectionAndIndices detection, open_ptrack::detection::DetectionSource* source);
 
         /** \brief Destructor. */
         virtual ~Detection();
@@ -176,6 +184,9 @@ namespace open_ptrack
          */
         cv::Mat&
         getImage();
+
+        pcl::PointIndices&
+        getPointIndices();
 
         /**
          * \brief Set the confidence of the people detector associated to the detection.

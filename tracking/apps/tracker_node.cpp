@@ -58,7 +58,13 @@
 #include <open_ptrack/tracking/tracker.h>
 #include <opt_msgs/Detection.h>
 #include <opt_msgs/DetectionArray.h>
+#include <opt_msgs/DetectionAndIndices.h>
+#include <opt_msgs/DetectionAndIndicesArray.h>
+#include <opt_msgs/DetectionIndicesAndTrajectoryID.h>
+#include <opt_msgs/DetectionIndicesAndTrajectoryIDArray.h>
 #include <opt_msgs/TrackArray.h>
+#include <opt_msgs/TrackWithIndices.h>
+#include <opt_msgs/TrackWithIndicesAndTrajectoryIDArray.h>
 //#include <open_ptrack/opt_utils/ImageConverter.h>
 
 // Global variables:
@@ -88,14 +94,16 @@ double min_confidence_sr;
 double min_confidence_detections;
 double min_confidence_detections_sr;
 
+/// Edited for EUROC purposes Detection -> DetectionAndIndices
 /**
  * \brief Read the DetectionArray message and use the detections for creating/updating/deleting tracks
  *
  * \param[in] msg the DetectionArray message.
  */
 void
-detection_cb(const opt_msgs::DetectionArray::ConstPtr& msg)
+detection_cb(const opt_msgs::DetectionIndicesAndTrajectoryIDArray::ConstPtr& msg)
 {
+  //std::cout << "header:" << msg->header.frame_id << std::endl;
   // Read message header information:
   std::string frame_id = msg->header.frame_id;
   ros::Time frame_time = msg->header.stamp;
@@ -143,7 +151,7 @@ detection_cb(const opt_msgs::DetectionArray::ConstPtr& msg)
 
     // Create a Detection object for every detection in the detection message:
     std::vector<open_ptrack::detection::Detection> detections_vector;
-    for(std::vector<opt_msgs::Detection>::const_iterator it = msg->detections.begin();
+    for(std::vector<opt_msgs::DetectionAndIndices>::const_iterator it = msg->detections.begin();
         it != msg->detections.end(); it++)
     {
       detections_vector.push_back(open_ptrack::detection::Detection(*it, source));
@@ -171,9 +179,10 @@ detection_cb(const opt_msgs::DetectionArray::ConstPtr& msg)
       // Create a TrackingResult message with the output of the tracking process
       if(output_tracking_results)
       {
-        opt_msgs::TrackArray::Ptr tracking_results_msg(new opt_msgs::TrackArray);
+        opt_msgs::TrackWithIndicesAndTrajectoryIDArray::Ptr tracking_results_msg(new opt_msgs::TrackWithIndicesAndTrajectoryIDArray);
         tracking_results_msg->header.stamp = frame_time;
         tracking_results_msg->header.frame_id = world_frame_id;
+        tracking_results_msg->trajectory_id = msg->trajectory_id;
         tracker->toMsg(tracking_results_msg);
         // Publish tracking message:
         results_pub.publish(tracking_results_msg);
@@ -225,7 +234,7 @@ detection_cb(const opt_msgs::DetectionArray::ConstPtr& msg)
     {
       if(output_tracking_results)
       { // Publish an empty tracking message
-        opt_msgs::TrackArray::Ptr tracking_results_msg(new opt_msgs::TrackArray);
+        opt_msgs::TrackWithIndicesAndTrajectoryIDArray::Ptr tracking_results_msg(new opt_msgs::TrackWithIndicesAndTrajectoryIDArray);
         tracking_results_msg->header.stamp = frame_time;
         tracking_results_msg->header.frame_id = world_frame_id;
         results_pub.publish(tracking_results_msg);
@@ -287,7 +296,7 @@ main(int argc, char** argv)
   marker_pub_tmp = nh.advertise<visualization_msgs::Marker>("/tracker/markers", 1);
   marker_pub = nh.advertise<visualization_msgs::MarkerArray>("/tracker/markers_array", 1);
   pointcloud_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZRGBA> >("/tracker/history", 1);
-  results_pub = nh.advertise<opt_msgs::TrackArray>("/tracker/tracks", 1);
+  results_pub = nh.advertise<opt_msgs::TrackWithIndicesAndTrajectoryIDArray>("/tracker/tracks", 1);
 
   tf_listener = new tf::TransformListener();
 
@@ -340,7 +349,8 @@ main(int argc, char** argv)
   nh.param("target/detections_to_validate", detections_to_validate, 5);
 
   double haar_disp_ada_min_confidence, ground_based_people_detection_min_confidence;
-  nh.param("haar_disp_ada_min_confidence", haar_disp_ada_min_confidence, -2.5); //0.0);
+  //nh.param("haar_disp_ada_min_confidence", haar_disp_ada_min_confidence, -2.5); //0.0);
+  nh.param("ground_based_people_detection_min_confidence", haar_disp_ada_min_confidence, -2.5); //0.0);
   nh.param("ground_based_people_detection_min_confidence", ground_based_people_detection_min_confidence, -2.5); //0.0);
 
   nh.param("swissranger", swissranger, false);

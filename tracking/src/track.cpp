@@ -144,8 +144,11 @@ namespace open_ptrack
         double min_confidence,
         double min_confidence_detections,
         open_ptrack::detection::DetectionSource* detection_source,
+        pcl::PointIndices point_indices,
         bool first_update)
     {
+      point_indices_ = point_indices;
+
       //Update Kalman filter
       int difference;
       double vx, vy;
@@ -578,6 +581,42 @@ namespace open_ptrack
         track_msg.box_2D.x = int(top(0)) - track_msg.box_2D.width;
         track_msg.box_2D.y = int(top(1)) - track_msg.box_2D.width / 4;
       }
+    }
+
+    void
+    Track::toMsg(opt_msgs::TrackWithIndices& track_msg, bool vertical)
+    {
+
+      double _x, _y;
+      filter_->getState(_x, _y);
+
+      track_msg.track.id = id_;
+      track_msg.track.x = _x;
+      track_msg.track.y = _y;
+      track_msg.track.height = height_;
+      track_msg.track.distance = distance_;  // NEW
+      track_msg.track.visibility = visibility_;
+
+      Eigen::Vector3d top(_x, _y, z_ + (height_/2));
+      Eigen::Vector3d bottom(_x, _y, z_ - (height_/2));
+      top = detection_source_->transformToCam(top);
+      bottom = detection_source_->transformToCam(bottom);
+      if (not vertical)
+      {
+        track_msg.track.box_2D.height = int(std::abs((top - bottom)(1)));
+        track_msg.track.box_2D.width = track_msg.track.box_2D.height / 2;
+        track_msg.track.box_2D.x = int(top(0)) - track_msg.track.box_2D.height / 4;
+        track_msg.track.box_2D.y = int(top(1));
+      }
+      else
+      {
+        track_msg.track.box_2D.width = int(std::abs((top - bottom)(0)));
+        track_msg.track.box_2D.height = track_msg.track.box_2D.width / 2;
+        track_msg.track.box_2D.x = int(top(0)) - track_msg.track.box_2D.width;
+        track_msg.track.box_2D.y = int(top(1)) - track_msg.track.box_2D.width / 4;
+      }
+
+      track_msg.indices.indices = point_indices_.indices;
     }
 
     open_ptrack::detection::DetectionSource*

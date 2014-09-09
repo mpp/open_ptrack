@@ -190,6 +190,19 @@ namespace open_ptrack
     }
 
     void
+    Tracker::toMsg(opt_msgs::TrackWithIndicesAndTrajectoryIDArray::Ptr& msg)
+    {
+      for(std::list<open_ptrack::tracking::Track*>::iterator it = tracks_.begin(); it != tracks_.end(); it++)
+      {
+        open_ptrack::tracking::Track* t = *it;
+
+        opt_msgs::TrackWithIndices track;
+        t->toMsg(track, vertical_);
+        msg->tracks.push_back(track);
+      }
+    }
+
+    void
     Tracker::toMsg(opt_msgs::TrackArray::Ptr& msg, std::string& source_frame_id)
     {
       for(std::list<open_ptrack::tracking::Track*>::iterator it = tracks_.begin(); it != tracks_.end(); it++)
@@ -249,7 +262,7 @@ namespace open_ptrack
       bool first_update = true;
       t->update(detection.getWorldCentroid()(0), detection.getWorldCentroid()(1), detection.getWorldCentroid()(2),
           detection.getHeight(), detection.getDistance(), //0.0,
-          detection.getConfidence(), min_confidence_, min_confidence_detections_, detection.getSource(), first_update);
+          detection.getConfidence(), min_confidence_, min_confidence_detections_, detection.getSource(), detection.getPointIndices(), first_update);
 
       ROS_INFO("Created %d", t->getId());
 
@@ -382,7 +395,7 @@ namespace open_ptrack
               t->update(d.getWorldCentroid()(0), d.getWorldCentroid()(1), d.getWorldCentroid()(2),d.getHeight(),
                   d.getDistance(), //distance_matrix_(track, measure),
                   d.getConfidence(), min_confidence_, min_confidence_detections_,
-                  d.getSource(), first_update);
+                  d.getSource(), d.getPointIndices(), first_update);
 
               t->setVisibility(d.isOccluded() ? Track::OCCLUDED : Track::VISIBLE);
               updated = true;
