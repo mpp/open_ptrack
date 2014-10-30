@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(detection)
 #set(CMAKE_BUILD_TYPE RelWithDebInfo)
-find_package(catkin REQUIRED COMPONENTS cmake_modules roscpp pcl_ros pcl_conversions nodelet rosconsole image_transport opt_utils opt_msgs)
+find_package(catkin REQUIRED COMPONENTS cmake_modules roscpp pcl_ros pcl_conversions nodelet rosconsole image_transport opt_utils opt_msgs ipa325_com_msgs)
 
 find_package(VTK REQUIRED)
 if(VTK_FOUND)
@@ -34,7 +34,7 @@ endif (NOT PCL_FOUND)
 catkin_package(
    INCLUDE_DIRS include
    LIBRARIES ${PROJECT_NAME}
-   CATKIN_DEPENDS roscpp pcl_ros pcl_conversions opt_utils opt_msgs
+   CATKIN_DEPENDS roscpp pcl_ros pcl_conversions opt_utils opt_msgs ipa325_com_msgs
 )
 
 

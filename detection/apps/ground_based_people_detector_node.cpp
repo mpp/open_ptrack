@@ -74,6 +74,9 @@
 #include <opt_msgs/DetectionIndicesAndTrajectoryID.h>
 #include <opt_msgs/DetectionIndicesAndTrajectoryIDArray.h>
 
+//EuRoC includes
+#include <ipa325_com_msgs/ExecuteTask.h>
+
 using namespace opt_msgs;
 using namespace sensor_msgs;
 
@@ -120,6 +123,8 @@ main (int argc, char** argv)
   ros::init(argc, argv, "ground_based_people_detector");
   ros::NodeHandle nh("~");
 
+  /// TODO: EuRoC wait for server
+
   // Read some parameters from launch file:
   int ground_estimation_mode;
   nh.param("ground_estimation_mode", ground_estimation_mode, 0);
@@ -127,6 +132,8 @@ main (int argc, char** argv)
 
   nh.param("classifier_file", svm_filename, std::string("./"));
 
+  ros::ServiceClient client = nh.serviceClient<ipa325_com_msgs::ExecuteTask>("/execute_task");
+  client.waitForExistence();
 
   bool use_rgb;
   nh.param("use_rgb", use_rgb, false);
